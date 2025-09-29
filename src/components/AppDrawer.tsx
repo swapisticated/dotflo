@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { type App as AppType } from '../types/AppListModule';
 
@@ -20,6 +21,10 @@ interface AppDrawerProps {
   onSearchChange: (query: string) => void;
   onAppPress: (app: AppType) => void;
   onClose: () => void;
+  onAddToFavorites: (app: AppType) => void;
+  onRemoveFromFavorites: (app: AppType) => void;
+  isFavorite: (app: AppType) => boolean;
+
 }
 
 export default function AppDrawer({
@@ -29,12 +34,16 @@ export default function AppDrawer({
   onSearchChange,
   onAppPress,
   onClose,
+  onAddToFavorites,
+  onRemoveFromFavorites,
+  isFavorite
 }: AppDrawerProps) {
-  
+
   const renderApp = ({ item }: { item: AppType }) => (
     <TouchableOpacity
       style={styles.appItem}
       onPress={() => onAppPress(item)}
+      onLongPress={() => handleLongPress(item)} 
     >
       <View style={styles.appRow}>
         {item.icon && item.icon.length > 0 ? (
@@ -52,13 +61,30 @@ export default function AppDrawer({
     </TouchableOpacity>
   );
 
+  const handleLongPress = (app: AppType) => {
+    const isCurrentlyFavorite = isFavorite(app);
+
+    Alert.alert(
+      app.name,
+      isCurrentlyFavorite ? 'Remove from favorites?' : 'Add to favorites?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: isCurrentlyFavorite ? 'Remove' : 'Add',
+          onPress: () => isCurrentlyFavorite ? onRemoveFromFavorites(app) : onAddToFavorites(app)
+        }
+      ]
+    );
+  };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Text style={styles.closeText}>✕</Text>
         </TouchableOpacity>
-        
+
         <View style={styles.searchContainer}>
           <Text style={styles.prompt}>$ </Text>
           <TextInput
@@ -73,7 +99,7 @@ export default function AppDrawer({
           />
         </View>
       </View>
-      
+
       <FlatList
         data={filteredApps}
         renderItem={renderApp}

@@ -5,20 +5,24 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { type App as AppType } from '../types/AppListModule';
 
 const { width, height } = Dimensions.get('window');
 
 interface HomeScreenProps {
   onSwipeUp: () => void;
+  favoriteApps: AppType[];
+  onAppPress: (app: AppType) => void;
 }
 
-export default function HomeScreen({ onSwipeUp }: HomeScreenProps) {
-  const currentTime = new Date().toLocaleTimeString([], { 
-    hour: '2-digit', 
+export default function HomeScreen({ onSwipeUp, favoriteApps, onAppPress }: HomeScreenProps) {
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
     minute: '2-digit',
-    hour12: false 
+    hour12: false
   });
 
   const panGesture = Gesture.Pan()
@@ -34,10 +38,31 @@ export default function HomeScreen({ onSwipeUp }: HomeScreenProps) {
       <View style={styles.container}>
         <View style={styles.timeContainer}>
           <Text style={styles.time}>{currentTime}</Text>
+
           {/* <Text style={styles.hint}>swipe up for apps</Text> */}
         </View>
-        
-        <TouchableOpacity 
+
+        {favoriteApps.length > 0 && (
+          <View style={styles.favoritesContainer}>
+            <View style={styles.favoritesRow}>
+              {favoriteApps.map((app) => (
+                <TouchableOpacity
+                  key={app.packageName}
+                  style={styles.favoriteApp}
+                  onPress={() => onAppPress(app)}
+                >
+                  <Image
+                    source={{ uri: `data:image/png;base64,${app.icon}` }}
+                    style={styles.favoriteIcon}
+                  />
+                  <Text style={styles.favoriteLabel}>{app.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        <TouchableOpacity
           style={styles.swipeArea}
           onPress={onSwipeUp}
           activeOpacity={0.7}
@@ -85,5 +110,30 @@ const styles = StyleSheet.create({
     color: '#333333',
     fontSize: 24,
     fontFamily: 'monospace',
+  },
+  favoritesContainer: {
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  favoritesRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  favoriteApp: {
+    alignItems: 'center',
+    margin: 15,
+    width: 60,
+  },
+  favoriteIcon: {
+    width: 48,
+    height: 48,
+    marginBottom: 8,
+  },
+  favoriteLabel: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontFamily: 'monospace',
+    textAlign: 'center',
   },
 });
